@@ -165,7 +165,7 @@ defmodule Mix.Tasks.Vosk.DownloadModel do
     Mix.shell().info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
     Mix.shell().info("")
     Mix.shell().info("Usage in code:")
-    Mix.shell().info(~s|  {:ok, model} = VoskNif.Model.load("#{model_path}")|)
+    Mix.shell().info(~s|  {:ok, model} = VoskEx.Model.load("#{model_path}")|)
     Mix.shell().info("")
     Mix.shell().info("Run example:")
     Mix.shell().info(~s|  elixir examples/basic_recognition.exs #{model_path} audio.wav|)

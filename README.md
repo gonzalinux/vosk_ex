@@ -1,8 +1,8 @@
-# VoskNif
+# VoskEx
 
 Elixir NIF bindings for [Vosk](https://alphacephei.com/vosk/), an offline speech recognition toolkit.
 
-VoskNif provides a high-performance interface to Vosk's speech recognition capabilities, allowing you to recognize speech from audio files or streams entirely offline, with no network connection required.
+VoskEx provides a high-performance interface to Vosk's speech recognition capabilities, allowing you to recognize speech from audio files or streams entirely offline, with no network connection required.
 
 ## Features
 
@@ -33,12 +33,12 @@ brew install vosk-api
 
 ## Installation
 
-Add `vosk_nif` to your list of dependencies in `mix.exs`:
+Add `vosk_ex` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:vosk_nif, "~> 0.1.0"}
+    {:vosk_ex, "~> 0.1.0"}
   ]
 end
 ```
@@ -47,24 +47,34 @@ end
 
 ### 1. Download a speech model
 
-Download a model from [https://alphacephei.com/vosk/models](https://alphacephei.com/vosk/models):
+Use the built-in Mix task to download a model:
 
 ```bash
-wget https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip
-unzip vosk-model-small-en-us-0.15.zip
+# Download default English model
+mix vosk.download_model
+
+# Download Spanish model
+mix vosk.download_model es
+
+# Download specific model by name
+mix vosk.download_model vosk-model-small-en-us-0.15
 ```
+
+Available predefined languages: `en-us`, `es`, `fr`, `de`, `ru`, `cn`, `ja`, `pt`, `it`, and more.
+
+Or download manually from [https://alphacephei.com/vosk/models](https://alphacephei.com/vosk/models).
 
 ### 2. Basic usage
 
 ```elixir
 # Load the model
-{:ok, model} = VoskNif.Model.load("vosk-model-small-en-us-0.15")
+{:ok, model} = VoskEx.Model.load("vosk-model-small-en-us-0.15")
 
 # Create a recognizer (16kHz sample rate)
-{:ok, recognizer} = VoskNif.Recognizer.new(model, 16000.0)
+{:ok, recognizer} = VoskEx.Recognizer.new(model, 16000.0)
 
 # Optional: Enable word timing
-:ok = VoskNif.Recognizer.set_words(recognizer, true)
+:ok = VoskEx.Recognizer.set_words(recognizer, true)
 
 # Read audio file (PCM 16-bit mono, skip WAV header)
 audio = File.read!("audio.wav") |> binary_part(44, byte_size(audio) - 44)
@@ -72,19 +82,19 @@ audio = File.read!("audio.wav") |> binary_part(44, byte_size(audio) - 44)
 # Process audio in chunks
 chunk_size = 8000
 for <<chunk::binary-size(chunk_size) <- audio>> do
-  case VoskNif.Recognizer.accept_waveform(recognizer, chunk) do
+  case VoskEx.Recognizer.accept_waveform(recognizer, chunk) do
     :utterance_ended ->
-      {:ok, result} = VoskNif.Recognizer.result(recognizer)
+      {:ok, result} = VoskEx.Recognizer.result(recognizer)
       IO.inspect(result)
 
     :continue ->
-      {:ok, partial} = VoskNif.Recognizer.partial_result(recognizer)
+      {:ok, partial} = VoskEx.Recognizer.partial_result(recognizer)
       IO.inspect(partial, label: "Partial")
   end
 end
 
 # Get final result
-{:ok, final} = VoskNif.Recognizer.final_result(recognizer)
+{:ok, final} = VoskEx.Recognizer.final_result(recognizer)
 IO.inspect(final, label: "Final")
 ```
 
@@ -118,21 +128,21 @@ defmodule AudioProcessor do
   end
 
   def init(model_path) do
-    {:ok, model} = VoskNif.Model.load(model_path)
-    {:ok, recognizer} = VoskNif.Recognizer.new(model, 16000.0)
-    VoskNif.Recognizer.set_words(recognizer, true)
+    {:ok, model} = VoskEx.Model.load(model_path)
+    {:ok, recognizer} = VoskEx.Recognizer.new(model, 16000.0)
+    VoskEx.Recognizer.set_words(recognizer, true)
 
     {:ok, %{model: model, recognizer: recognizer}}
   end
 
   def handle_call({:process_audio, audio_chunk}, _from, state) do
-    result = case VoskNif.Recognizer.accept_waveform(state.recognizer, audio_chunk) do
+    result = case VoskEx.Recognizer.accept_waveform(state.recognizer, audio_chunk) do
       :utterance_ended ->
-        {:ok, result} = VoskNif.Recognizer.result(state.recognizer)
+        {:ok, result} = VoskEx.Recognizer.result(state.recognizer)
         {:utterance, result}
 
       :continue ->
-        {:ok, partial} = VoskNif.Recognizer.partial_result(state.recognizer)
+        {:ok, partial} = VoskEx.Recognizer.partial_result(state.recognizer)
         {:partial, partial}
 
       :error ->
@@ -144,15 +154,24 @@ defmodule AudioProcessor do
 end
 ```
 
+## Documentation
+
+Full documentation is available at [https://hexdocs.pm/vosk_ex](https://hexdocs.pm/vosk_ex) or you can generate it locally:
+
+```bash
+mix docs
+open doc/index.html
+```
+
 ## API Reference
 
-### VoskNif.Model
+### VoskEx.Model
 
 - `load(path)` - Load a model from a directory
 - `load!(path)` - Load a model, raising on error
 - `find_word(model, word)` - Check if a word exists in vocabulary
 
-### VoskNif.Recognizer
+### VoskEx.Recognizer
 
 - `new(model, sample_rate)` - Create a recognizer
 - `new!(model, sample_rate)` - Create a recognizer, raising on error
@@ -165,7 +184,7 @@ end
 - `final_result(recognizer)` - Get final result at stream end
 - `reset(recognizer)` - Reset recognizer state
 
-### VoskNif (Low-level API)
+### VoskEx (Low-level API)
 
 - `set_log_level(level)` - Set Vosk/Kaldi logging level (0 = default, <0 = silent, >0 = verbose)
 

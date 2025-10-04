@@ -274,4 +274,4 @@ static ErlNifFunc nif_funcs[] = {
 };
 
 // Initialize NIF module
-ERL_NIF_INIT(Elixir.VoskNif, nif_funcs, load, NULL, NULL, NULL)
+ERL_NIF_INIT(Elixir.VoskEx, nif_funcs, load, NULL, NULL, NULL)

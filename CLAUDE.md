@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-VoskNif is an Elixir NIF (Native Implemented Function) binding for the Vosk speech recognition library. It provides offline, high-performance speech-to-text capabilities for Elixir applications.
+VoskEx is an Elixir NIF (Native Implemented Function) binding for the Vosk speech recognition library. It provides offline, high-performance speech-to-text capabilities for Elixir applications.
 
 ## Build & Development Commands
 
@@ -51,7 +51,7 @@ The codebase uses a layered architecture to separate concerns:
 **Layer 2: Low-Level Elixir (`lib/vosk_nif.ex`)**
 - Thin wrapper with NIF stub functions
 - Loads shared library from `priv/vosk_nif.so`
-- Module name must match C: `Elixir.VoskNif` in `ERL_NIF_INIT()`
+- Module name must match C: `Elixir.VoskEx` in `ERL_NIF_INIT()`
 - Returns raw data (JSON strings, integers, error atoms)
 
 **Layer 3: High-Level API (`lib/vosk_nif/model.ex`, `lib/vosk_nif/recognizer.ex`)**
@@ -178,9 +178,9 @@ The Mix task (`lib/mix/tasks/vosk.download_model.ex`):
 
 ### NIF Loading Issues
 If you see "NIF not loaded" errors:
-1. Check `priv/vosk_nif.so` exists: `ls _build/dev/lib/vosk_nif/priv/`
+1. Check `priv/vosk_nif.so` exists: `ls _build/dev/lib/vosk_ex/priv/`
 2. Verify system libvosk: `ldconfig -p | grep vosk` (Linux) or `brew list vosk-api` (macOS)
-3. Check module name matches: `ERL_NIF_INIT(Elixir.VoskNif, ...)` in C
+3. Check module name matches: `ERL_NIF_INIT(Elixir.VoskEx, ...)` in C
 
 ### Compilation Errors
 - Missing `vosk_api.h`: Install `vosk-api-devel` package
@@ -190,7 +190,7 @@ If you see "NIF not loaded" errors:
 ### Recognition Not Working
 1. Verify audio format: 16kHz, mono, PCM 16-bit
 2. Check model path is correct and contains required files (`am/`, `graph/`, etc.)
-3. Enable Vosk logging: `VoskNif.set_log_level(1)` to see detailed output
+3. Enable Vosk logging: `VoskEx.set_log_level(1)` to see detailed output
 4. For WAV files, ensure you skip the 44-byte header
 
 ## Performance Characteristics

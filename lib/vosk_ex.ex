@@ -1,15 +1,66 @@
-defmodule VoskNif do
+defmodule VoskEx do
   @moduledoc """
   Elixir NIF wrapper for Vosk speech recognition library.
 
+  VoskEx provides offline, high-performance speech-to-text capabilities for Elixir applications
+  through bindings to the [Vosk API](https://alphacephei.com/vosk/).
+
+  ## Installation
+
+  Add `vosk_ex` to your list of dependencies in `mix.exs`:
+
+  ```elixir
+  def deps do
+    [
+      {:vosk_ex, "~> 0.1.0"}
+    ]
+  end
+  ```
+
+  Ensure you have the Vosk library installed on your system:
+  - **Fedora/RHEL**: `sudo dnf install vosk-api-devel`
+  - **Ubuntu/Debian**: Install from source or download from [Vosk releases](https://github.com/alphacep/vosk-api/releases)
+  - **macOS**: `brew install vosk-api`
+
+  ## Quick Start
+
+  ```elixir
+  # Download a model first
+  Mix.Task.run("vosk.download_model", ["en"])
+
+  # Load model and create recognizer
+  {:ok, model} = VoskEx.Model.load("models/vosk-model-small-en-us-0.15")
+  {:ok, recognizer} = VoskEx.Recognizer.new(model, 16000.0)
+
+  # Process audio (PCM 16-bit mono)
+  audio = File.read!("audio.wav") |> binary_part(44, byte_size(audio) - 44)
+  case VoskEx.Recognizer.accept_waveform(recognizer, audio) do
+    :utterance_ended ->
+      {:ok, result} = VoskEx.Recognizer.result(recognizer)
+      IO.inspect(result["text"])
+    :continue ->
+      {:ok, partial} = VoskEx.Recognizer.partial_result(recognizer)
+      IO.inspect(partial["partial"])
+  end
+  ```
+
+  ## Architecture
+
   This module provides low-level bindings to the Vosk C API.
-  For a more user-friendly interface, use VoskNif.Model and VoskNif.Recognizer.
+  For a more user-friendly interface, use `VoskEx.Model` and `VoskEx.Recognizer`.
+
+  The library uses a three-layer architecture:
+  - **Layer 1 (C NIF)**: Direct bindings to Vosk C API via `erl_nif.h`
+  - **Layer 2 (Low-Level)**: This module - thin Elixir wrapper with NIF stubs
+  - **Layer 3 (High-Level)**: `VoskEx.Model` and `VoskEx.Recognizer` - idiomatic Elixir API
+
+  Resources are automatically managed through BEAM garbage collection.
   """
 
   @on_load :load_nifs
 
   def load_nifs do
-    nif_file = :filename.join(:code.priv_dir(:vosk_nif), ~c"vosk_nif")
+    nif_file = :filename.join(:code.priv_dir(:vosk_ex), ~c"vosk_nif")
 
     case :erlang.load_nif(nif_file, 0) do
       :ok -> :ok
