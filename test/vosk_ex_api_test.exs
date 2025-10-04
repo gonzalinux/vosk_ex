@@ -20,8 +20,10 @@ defmodule VoskExApiTest do
     assert VoskEx.set_log_level(-1) == :ok
     # Set log level to verbose
     assert VoskEx.set_log_level(1) == :ok
-    # Reset to default
+    # Set log level to default
     assert VoskEx.set_log_level(0) == :ok
+    # Reset back to silent for other tests
+    assert VoskEx.set_log_level(-1) == :ok
   end
 
   test "Model and Recognizer modules are loaded" do

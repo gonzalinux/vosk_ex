@@ -7,6 +7,9 @@ defmodule VoskEx.Application do
 
   @impl true
   def start(_type, _args) do
+    # Log level is configured during NIF load (see VoskEx.load_nifs/0)
+    # Users can change it at runtime with VoskEx.set_log_level/1
+
     children = [
       # Starts a worker by calling: VoskEx.Worker.start_link(arg)
       # {VoskEx.Worker, arg}

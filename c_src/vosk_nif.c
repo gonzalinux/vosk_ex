@@ -236,6 +236,14 @@ static ERL_NIF_TERM reset_recognizer_nif(ErlNifEnv* env, int argc, const ERL_NIF
 
 // NIF initialization callback
 static int load(ErlNifEnv* env, void** priv_data, ERL_NIF_TERM load_info) {
+    // Set log level from load_info parameter (passed from Elixir)
+    // Default to -1 (silent) if not an integer
+    int log_level = -1;
+    if (!enif_get_int(env, load_info, &log_level)) {
+        log_level = -1;  // Default to silent if invalid
+    }
+    vosk_set_log_level(log_level);
+
     MODEL_TYPE = enif_open_resource_type(
         env, NULL, "VoskModel",
         model_destructor,

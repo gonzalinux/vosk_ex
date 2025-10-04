@@ -40,6 +40,15 @@ Supported platforms:
 
 The library automatically detects your platform and downloads the appropriate precompiled Vosk library on first compilation.
 
+## Configuration
+
+VoskEx logs are **disabled by default**. To enable Vosk/Kaldi internal logging, add to your `config/config.exs`:
+
+```elixir
+config :vosk_ex,
+  log_level: 0  # 0 = default logging, -1 = silent (default), >0 = more verbose
+```
+
 ## Usage
 
 ### 1. Download a speech model

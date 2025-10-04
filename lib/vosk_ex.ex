@@ -17,10 +17,28 @@ defmodule VoskEx do
   end
   ```
 
-  Ensure you have the Vosk library installed on your system:
-  - **Fedora/RHEL**: `sudo dnf install vosk-api-devel`
-  - **Ubuntu/Debian**: Install from source or download from [Vosk releases](https://github.com/alphacep/vosk-api/releases)
-  - **macOS**: `brew install vosk-api`
+  VoskEx automatically downloads precompiled Vosk libraries during compilation, so **no system dependencies are required**!
+
+  Simply run:
+  ```bash
+  mix deps.get
+  mix compile  # Automatically downloads Vosk library (~2-7 MB) for your platform
+  ```
+
+  Supported platforms:
+  - **Linux**: x86_64, aarch64 (ARM64)
+  - **macOS**: Intel (x86_64), Apple Silicon (M1/M2/M3)
+  - **Windows**: x64
+
+  ## Configuration
+
+  VoskEx logs are **disabled by default** to keep your application logs clean.
+  To enable Vosk/Kaldi internal logging, add to your `config/config.exs`:
+
+  ```elixir
+  config :vosk_ex,
+    log_level: 0  # 0 = default logging, -1 = silent (default), >0 = more verbose
+  ```
 
   ## Quick Start
 
@@ -84,8 +102,12 @@ defmodule VoskEx do
 
     nif_file = :filename.join(priv_dir, ~c"vosk_nif")
 
-    case :erlang.load_nif(nif_file, 0) do
-      :ok -> :ok
+    # Get log level from application config, default to -1 (silent)
+    log_level = Application.get_env(:vosk_ex, :log_level, -1)
+
+    case :erlang.load_nif(nif_file, log_level) do
+      :ok ->
+        :ok
       {:error, {:load_failed, reason}} ->
         IO.warn("Failed to load NIF: #{inspect(reason)}")
         IO.warn("Native library directory: #{native_dir}")

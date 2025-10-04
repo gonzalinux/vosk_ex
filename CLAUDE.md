@@ -38,6 +38,19 @@ MODEL_PATH=models/custom-model mix test --include integration  # Use custom mode
 elixir examples/basic_recognition.exs models/vosk-model-small-en-us-0.15 audio.wav
 ```
 
+## Configuration
+
+### Logging
+
+Vosk/Kaldi logs are **disabled by default** (level: -1) to keep application logs clean. Users can enable logging by adding to their `config/config.exs`:
+
+```elixir
+config :vosk_ex,
+  log_level: 0  # 0 = default logging, -1 = silent (default), >0 = more verbose
+```
+
+The log level is set during application start in `VoskEx.Application.start/2` by reading the `:log_level` config value.
+
 ## Architecture
 
 ### Three-Layer Design
