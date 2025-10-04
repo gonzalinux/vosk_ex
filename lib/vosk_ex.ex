@@ -1,6 +1,6 @@
 defmodule VoskEx do
   @moduledoc """
-  Elixir NIF wrapper for Vosk speech recognition library.
+  Elixir bindings for the Vosk API speech recognition library.
 
   VoskEx provides offline, high-performance speech-to-text capabilities for Elixir applications
   through bindings to the [Vosk API](https://alphacephei.com/vosk/).

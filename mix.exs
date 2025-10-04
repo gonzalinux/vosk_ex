@@ -12,9 +12,13 @@ defmodule VoskEx.MixProject do
       make_clean: ["clean"],
       deps: deps(),
 
+      # Hex package metadata
+      description: "Elixir bindings for Vosk API - offline speech recognition. Automatically downloads precompiled libraries, no system dependencies required!",
+      package: package(),
+
       # Documentation
       name: "VoskEx",
-      source_url: "https://github.com/yourusername/vosk_ex",
+      source_url: "https://github.com/gonzalinux/vosk_ex",
       homepage_url: "https://github.com/yourusername/vosk_ex",
       docs: docs()
     ]
@@ -34,6 +38,19 @@ defmodule VoskEx.MixProject do
       {:elixir_make, "~> 0.8", runtime: false},
       {:jason, "~> 1.4"},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false}
+    ]
+  end
+
+  defp package do
+    [
+      name: "vosk_ex",
+      files: ~w(lib c_src priv .formatter.exs mix.exs README.md LICENSE Makefile),
+      licenses: ["Apache-2.0"],
+      links: %{
+        "GitHub" => "https://github.com/gonzalinux/vosk_ex",
+        "Vosk" => "https://alphacephei.com/vosk/"
+      },
+      maintainers: ["Your Name"]
     ]
   end
 

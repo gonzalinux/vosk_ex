@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-VoskEx is an Elixir NIF (Native Implemented Function) binding for the Vosk speech recognition library. It provides offline, high-performance speech-to-text capabilities for Elixir applications.
+VoskEx provides Elixir bindings for the Vosk API speech recognition library. It enables offline, high-performance speech-to-text capabilities for Elixir applications.
 
-**Key Feature**: VoskEx bundles precompiled Vosk libraries for Linux (x86_64, aarch64) and Windows (x64), eliminating the need for users to install system dependencies.
+**Key Feature**: VoskEx automatically downloads precompiled Vosk libraries for Linux (x86_64, aarch64), macOS (Intel, Apple Silicon), and Windows (x64), eliminating the need for users to install system dependencies.
 
 ## Build & Development Commands
 

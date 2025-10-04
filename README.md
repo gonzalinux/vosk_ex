@@ -1,6 +1,6 @@
 # VoskEx
 
-Elixir NIF bindings for [Vosk](https://alphacephei.com/vosk/), an offline speech recognition toolkit.
+Elixir bindings for the [Vosk API](https://alphacephei.com/vosk/) - offline speech recognition toolkit.
 
 VoskEx provides a high-performance interface to Vosk's speech recognition capabilities, allowing you to recognize speech from audio files or streams entirely offline, with no network connection required.
 
