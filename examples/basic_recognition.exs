@@ -1,6 +1,6 @@
 #!/usr/bin/env elixir
 
-# Example: Basic speech recognition with VoskNif
+# Example: Basic speech recognition with VoskEx
 #
 # Usage:
 #   1. Download a model from https://alphacephei.com/vosk/models
@@ -10,14 +10,14 @@
 defmodule BasicRecognition do
   def run([model_path, audio_file]) do
     IO.puts("Loading model from #{model_path}...")
-    {:ok, model} = VoskNif.Model.load(model_path)
+    {:ok, model} = VoskEx.Model.load(model_path)
     IO.puts("Model loaded successfully!")
 
     IO.puts("Creating recognizer...")
-    {:ok, recognizer} = VoskNif.Recognizer.new(model, 16000.0)
+    {:ok, recognizer} = VoskEx.Recognizer.new(model, 16000.0)
 
     # Enable word timing
-    VoskNif.Recognizer.set_words(recognizer, true)
+    VoskEx.Recognizer.set_words(recognizer, true)
 
     IO.puts("Reading audio file: #{audio_file}...")
     # Read audio and skip WAV header (44 bytes)
@@ -35,13 +35,13 @@ defmodule BasicRecognition do
     chunks = for <<chunk::binary-size(chunk_size) <- audio>>, do: chunk
 
     Enum.each(chunks, fn chunk ->
-      case VoskNif.Recognizer.accept_waveform(recognizer, chunk) do
+      case VoskEx.Recognizer.accept_waveform(recognizer, chunk) do
         :utterance_ended ->
-          {:ok, result} = VoskNif.Recognizer.result(recognizer)
+          {:ok, result} = VoskEx.Recognizer.result(recognizer)
           IO.puts("\n[UTTERANCE] #{inspect(result)}")
 
         :continue ->
-          {:ok, partial} = VoskNif.Recognizer.partial_result(recognizer)
+          {:ok, partial} = VoskEx.Recognizer.partial_result(recognizer)
           IO.write("\r[PARTIAL] #{partial["partial"] || ""}")
 
         :error ->
@@ -50,7 +50,7 @@ defmodule BasicRecognition do
     end)
 
     IO.puts("\n\nGetting final result...")
-    {:ok, final} = VoskNif.Recognizer.final_result(recognizer)
+    {:ok, final} = VoskEx.Recognizer.final_result(recognizer)
     IO.puts("[FINAL] #{inspect(final)}")
 
     if text = final["text"] do

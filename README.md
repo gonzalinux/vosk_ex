@@ -13,27 +13,11 @@ VoskEx provides a high-performance interface to Vosk's speech recognition capabi
 - 📊 **Detailed results** - Get word-level timing and confidence scores
 - 🧵 **Thread-safe** - Uses dirty schedulers for non-blocking operation
 
-## Prerequisites
-
-### Fedora 42
-
-```bash
-sudo dnf install vosk-api-devel
-```
-
-### Other Linux distributions
-
-Either install vosk-api-devel from your package manager, or build from source. See the [Vosk documentation](https://alphacephei.com/vosk/install) for details.
-
-### macOS
-
-```bash
-brew install vosk-api
-```
-
 ## Installation
 
-Add `vosk_ex` to your list of dependencies in `mix.exs`:
+VoskEx automatically downloads precompiled Vosk libraries during compilation, so **no system dependencies are required**!
+
+Simply add `vosk_ex` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
@@ -42,6 +26,19 @@ def deps do
   ]
 end
 ```
+
+Then run:
+```bash
+mix deps.get
+mix compile  # Automatically downloads Vosk library (~2-7 MB) for your platform
+```
+
+Supported platforms:
+- **Linux**: x86_64, aarch64 (ARM64)
+- **macOS**: Intel (x86_64), Apple Silicon (M1/M2/M3)
+- **Windows**: x64
+
+The library automatically detects your platform and downloads the appropriate precompiled Vosk library on first compilation.
 
 ## Usage
 

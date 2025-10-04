@@ -17,16 +17,22 @@ erl_crash.dump
 *.ez
 
 # Ignore package tarball (built via "mix hex.build").
-vosk_nif-*.tar
+vosk_ex-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
 
 # NIF compiled artifacts
-/priv/*.so
+/priv/vosk_nif.so
 /priv/*.dll
 /priv/*.dylib
 *.o
 
+# Downloaded Vosk libraries (downloaded automatically via mix vosk.fetch_library)
+/priv/native/
+
 # Vosk models (large files, download with mix vosk.download_model)
 /models/
+
+/.idea
+*.iml

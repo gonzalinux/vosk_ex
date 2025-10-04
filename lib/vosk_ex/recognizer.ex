@@ -92,7 +92,7 @@ defmodule VoskEx.Recognizer do
   @doc """
   Create a new recognizer, raising on error.
   """
-  @spec new!(VoskNif.Model.t(), float()) :: t()
+  @spec new!(VoskEx.Model.t(), float()) :: t()
   def new!(model, sample_rate) do
     case new(model, sample_rate) do
       {:ok, recognizer} -> recognizer

@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 VoskEx is an Elixir NIF (Native Implemented Function) binding for the Vosk speech recognition library. It provides offline, high-performance speech-to-text capabilities for Elixir applications.
 
+**Key Feature**: VoskEx bundles precompiled Vosk libraries for Linux (x86_64, aarch64) and Windows (x64), eliminating the need for users to install system dependencies.
+
 ## Build & Development Commands
 
 ### Setup
@@ -128,7 +130,7 @@ Vosk expects **PCM 16-bit mono** audio:
 4. **Add high-level wrapper** in appropriate module:
    ```elixir
    def new_function(%__MODULE__{ref: ref}, arg) do
-     VoskNif.new_function(ref, arg)
+     VoskEx.new_function(ref, arg)
    end
    ```
 
@@ -179,19 +181,57 @@ The Mix task (`lib/mix/tasks/vosk.download_model.ex`):
 ### NIF Loading Issues
 If you see "NIF not loaded" errors:
 1. Check `priv/vosk_nif.so` exists: `ls _build/dev/lib/vosk_ex/priv/`
-2. Verify system libvosk: `ldconfig -p | grep vosk` (Linux) or `brew list vosk-api` (macOS)
+2. Verify bundled libvosk exists: `ls _build/dev/lib/vosk_ex/priv/native/`
 3. Check module name matches: `ERL_NIF_INIT(Elixir.VoskEx, ...)` in C
+4. Verify platform detection: `uname -s && uname -m`
 
 ### Compilation Errors
-- Missing `vosk_api.h`: Install `vosk-api-devel` package
+- Missing `vosk_api.h`: Should be in `c_src/include/` (bundled)
 - Missing Erlang headers: Install `erlang-devel` package
+- Missing bundled library: Check `priv/native/{platform}/libvosk.so` exists
 - Makefile fails: Check `ERLANG_PATH` detection with `make -n`
+- Unsupported platform: Add library to `priv/native/` and update Makefile
 
 ### Recognition Not Working
 1. Verify audio format: 16kHz, mono, PCM 16-bit
 2. Check model path is correct and contains required files (`am/`, `graph/`, etc.)
 3. Enable Vosk logging: `VoskEx.set_log_level(1)` to see detailed output
 4. For WAV files, ensure you skip the 44-byte header
+
+## Automatic Library Download
+
+VoskEx automatically downloads precompiled Vosk libraries during the first compilation.
+
+### How It Works
+1. **First Compilation**: Makefile checks if `priv/native/{platform}/libvosk.{so,dll}` exists
+2. **Download**: If not present, downloads from GitHub releases (~2-7 MB depending on platform)
+3. **Extract**: Automatically extracts library to `priv/native/{platform}/`
+4. **Link**: Links NIF against the downloaded library with rpath set to `$ORIGIN/native/{platform}`
+5. **Runtime**: NIF loader sets `LD_LIBRARY_PATH` (Linux) or `PATH` (Windows) to ensure library is found
+
+### Directory Structure (after compilation)
+```
+priv/native/
+├── linux-x86_64/libvosk.so      (25 MB, auto-downloaded)
+├── linux-aarch64/libvosk.so     (7.2 MB, auto-downloaded)
+└── windows-x86_64/libvosk.dll   (26 MB, auto-downloaded)
+```
+
+Note: `priv/native/` is gitignored - libraries are downloaded on each machine as needed.
+
+### Platform Detection
+- **Linux/macOS**: Detects architecture (x86_64 or aarch64/arm64) via `uname -m`
+- **macOS**: Uses Linux builds (they work via compatibility)
+- **Windows**: Assumes x64
+
+### Library Sources
+All libraries are from official Vosk releases (v0.3.45):
+- https://github.com/alphacep/vosk-api/releases/download/v0.3.45/vosk-linux-x86_64-0.3.45.zip
+- https://github.com/alphacep/vosk-api/releases/download/v0.3.45/vosk-linux-aarch64-0.3.45.zip
+- https://github.com/alphacep/vosk-api/releases/download/v0.3.45/vosk-win64-0.3.45.zip
+
+### Updating Vosk Version
+To update to a new Vosk version, edit `VOSK_VERSION` in the Makefile and delete `priv/native/` to force re-download.
 
 ## Performance Characteristics
 

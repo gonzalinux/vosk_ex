@@ -60,13 +60,63 @@ defmodule VoskEx do
   @on_load :load_nifs
 
   def load_nifs do
-    nif_file = :filename.join(:code.priv_dir(:vosk_ex), ~c"vosk_nif")
+    # Set up library path for bundled libvosk
+    priv_dir = :code.priv_dir(:vosk_ex)
+    native_dir = :filename.join([priv_dir, ~c"native", detect_platform()])
+
+    # Add native library directory to LD_LIBRARY_PATH equivalent
+    case :os.type() do
+      {:unix, :darwin} ->
+        # macOS uses DYLD_LIBRARY_PATH but it's restricted, rpath should work
+        :ok
+      {:unix, _} ->
+        # Linux - add to LD_LIBRARY_PATH
+        current_path = System.get_env("LD_LIBRARY_PATH", "")
+        new_path = if current_path == "",
+          do: List.to_string(native_dir),
+          else: "#{List.to_string(native_dir)}:#{current_path}"
+        System.put_env("LD_LIBRARY_PATH", new_path)
+      {:win32, _} ->
+        # Windows uses PATH
+        current_path = System.get_env("PATH", "")
+        System.put_env("PATH", "#{List.to_string(native_dir)};#{current_path}")
+    end
+
+    nif_file = :filename.join(priv_dir, ~c"vosk_nif")
 
     case :erlang.load_nif(nif_file, 0) do
       :ok -> :ok
       {:error, {:load_failed, reason}} ->
         IO.warn("Failed to load NIF: #{inspect(reason)}")
+        IO.warn("Native library directory: #{native_dir}")
         :ok
+    end
+  end
+
+  defp detect_platform do
+    case :os.type() do
+      {:unix, :linux} ->
+        detect_arch()
+      {:unix, :darwin} ->
+        # macOS uses Linux builds (they work via compatibility)
+        detect_arch()
+      {:win32, _} ->
+        ~c"windows-x86_64"
+    end
+  end
+
+  defp detect_arch do
+    case :erlang.system_info(:system_architecture) do
+      arch when is_list(arch) ->
+        arch_str = List.to_string(arch)
+        cond do
+          String.contains?(arch_str, "x86_64") or String.contains?(arch_str, "amd64") ->
+            ~c"linux-x86_64"
+          String.contains?(arch_str, "aarch64") or String.contains?(arch_str, "arm64") ->
+            ~c"linux-aarch64"
+          true ->
+            ~c"linux-x86_64"  # default
+        end
     end
   end
 
