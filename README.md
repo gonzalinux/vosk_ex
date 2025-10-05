@@ -22,7 +22,7 @@ Simply add `vosk_ex` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:vosk_ex, "~> 0.1.0"}
+    {:vosk_ex, "~> 0.1.1"}
   ]
 end
 ```
@@ -46,7 +46,7 @@ VoskEx logs are **disabled by default**. To enable Vosk/Kaldi internal logging, 
 
 ```elixir
 config :vosk_ex,
-  log_level: 0  # 0 = default logging, -1 = silent (default), >0 = more verbose
+  log_level: 0  # -1 = silent (default), 0 = default logging, >0 = more verbose
 ```
 
 ## Usage
@@ -192,7 +192,7 @@ open doc/index.html
 
 ### VoskEx (Low-level API)
 
-- `set_log_level(level)` - Set Vosk/Kaldi logging level (0 = default, <0 = silent, >0 = verbose)
+- `set_log_level(level)` - Set Vosk/Kaldi logging level (-1 = silent, 0 = default, >0 = verbose)
 
 ## Audio Format
 

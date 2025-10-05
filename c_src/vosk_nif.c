@@ -195,7 +195,7 @@ static ERL_NIF_TERM get_result_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM 
     }
 
     const char* result = vosk_recognizer_result(rec_res->recognizer);
-    return enif_make_string(env, result, ERL_NIF_LATIN1);
+    return enif_make_string(env, result, ERL_NIF_UTF8);
 }
 
 // Get partial result
@@ -207,7 +207,7 @@ static ERL_NIF_TERM get_partial_result_nif(ErlNifEnv* env, int argc, const ERL_N
     }
 
     const char* result = vosk_recognizer_partial_result(rec_res->recognizer);
-    return enif_make_string(env, result, ERL_NIF_LATIN1);
+    return enif_make_string(env, result, ERL_NIF_UTF8);
 }
 
 // Get final result
@@ -219,7 +219,7 @@ static ERL_NIF_TERM get_final_result_nif(ErlNifEnv* env, int argc, const ERL_NIF
     }
 
     const char* result = vosk_recognizer_final_result(rec_res->recognizer);
-    return enif_make_string(env, result, ERL_NIF_LATIN1);
+    return enif_make_string(env, result, ERL_NIF_UTF8);
 }
 
 // Reset recognizer

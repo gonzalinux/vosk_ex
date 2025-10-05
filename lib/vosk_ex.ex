@@ -37,7 +37,7 @@ defmodule VoskEx do
 
   ```elixir
   config :vosk_ex,
-    log_level: 0  # 0 = default logging, -1 = silent (default), >0 = more verbose
+    log_level: 0  # -1 = silent (default), 0 = default logging, >0 = more verbose
   ```
 
   ## Quick Start
@@ -147,8 +147,8 @@ defmodule VoskEx do
   @doc """
   Set the log level for Vosk/Kaldi messages.
 
-  - 0: default (info and errors)
-  - < 0: silent
+  - -1: silent
+  - 0: default logging
   - > 0: more verbose
   """
   def set_log_level(_level), do: :erlang.nif_error("NIF not loaded")

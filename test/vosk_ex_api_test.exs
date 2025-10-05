@@ -98,4 +98,35 @@ defmodule VoskExApiTest do
       IO.puts("\nSkipping vocabulary test - model not found")
     end
   end
+
+  @tag :integration
+  test "transcribes test_audio.raw file" do
+    audio_path = "test/test_audio.raw"
+
+    if File.dir?(@model_path) and File.exists?(audio_path) do
+      {:ok, model} = VoskEx.Model.load(@model_path)
+      {:ok, recognizer} = VoskEx.Recognizer.new(model, 16000.0)
+
+      # Read raw PCM data directly
+      pcm_data = File.read!(audio_path)
+
+      # Process the audio
+      VoskEx.Recognizer.accept_waveform(recognizer, pcm_data)
+
+      # Get final result
+      {:ok, result} = VoskEx.Recognizer.final_result(recognizer)
+
+      # Assert the transcription matches expected text
+      assert result["text"] == "hello one two three welcome to this demonstration thank you for listening"
+    else
+      if not File.dir?(@model_path) do
+        IO.puts("\nSkipping transcription test - model not found at #{@model_path}")
+        IO.puts("Run: mix vosk.download_model")
+      end
+
+      if not File.exists?(audio_path) do
+        IO.puts("\nSkipping transcription test - audio file not found at #{audio_path}")
+      end
+    end
+  end
 end
