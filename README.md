@@ -22,7 +22,7 @@ Simply add `vosk_ex` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:vosk_ex, "~> 0.1.1"}
+    {:vosk_ex, "~> 0.1.2"}
   ]
 end
 ```

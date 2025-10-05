@@ -4,7 +4,7 @@ defmodule VoskEx.MixProject do
   def project do
     [
       app: :vosk_ex,
-      version: "0.1.1",
+      version: "0.1.2",
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       compilers: [:elixir_make] ++ Mix.compilers(),
@@ -13,7 +13,8 @@ defmodule VoskEx.MixProject do
       deps: deps(),
 
       # Hex package metadata
-      description: "Elixir bindings for Vosk API - offline speech recognition. Automatically downloads precompiled libraries, no system dependencies required!",
+      description:
+        "Elixir bindings for Vosk API - offline speech recognition. Automatically downloads precompiled libraries, no system dependencies required!",
       package: package(),
 
       # Documentation
