@@ -4,7 +4,7 @@ defmodule VoskEx.MixProject do
   def project do
     [
       app: :vosk_ex,
-      version: "0.1.2",
+      version: "0.2.0",
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       compilers: [:elixir_make] ++ Mix.compilers(),
@@ -45,7 +45,8 @@ defmodule VoskEx.MixProject do
   defp package do
     [
       name: "vosk_ex",
-      files: ~w(lib c_src priv .formatter.exs mix.exs README.md LICENSE Makefile),
+      files:
+        ~w(lib c_src scripts .formatter.exs mix.exs README.md LICENSE Makefile Makefile.win download_vosk.ps1),
       licenses: ["Apache-2.0"],
       links: %{
         "GitHub" => "https://github.com/gonzalinux/vosk_ex",

@@ -1,5 +1,9 @@
 # VoskEx
 
+[![CI](https://github.com/gonzalinux/vosk_ex/actions/workflows/ci.yaml/badge.svg)](https://github.com/gonzalinux/vosk_ex/actions/workflows/ci.yaml)
+[![Hex.pm](https://img.shields.io/hexpm/v/vosk_ex.svg)](https://hex.pm/packages/vosk_ex)
+[![Documentation](https://img.shields.io/badge/hex-docs-blue.svg)](https://hexdocs.pm/vosk_ex)
+
 Elixir bindings for the [Vosk API](https://alphacephei.com/vosk/) - offline speech recognition toolkit.
 
 VoskEx provides a high-performance interface to Vosk's speech recognition capabilities, allowing you to recognize speech from audio files or streams entirely offline, with no network connection required.
@@ -22,7 +26,7 @@ Simply add `vosk_ex` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:vosk_ex, "~> 0.1.2"}
+    {:vosk_ex, "~> 0.2.0"}
   ]
 end
 ```
@@ -39,6 +43,45 @@ Supported platforms:
 - **Windows**: x64
 
 The library automatically detects your platform and downloads the appropriate precompiled Vosk library on first compilation.
+
+### Windows Users - Additional Setup Required
+
+On Windows, you need to add the Vosk DLL directory to PATH **before** starting your application. This is a Windows limitation for finding external DLL dependencies.
+
+**Why?** Unlike bcrypt or other self-contained NIFs, VoskEx depends on external Vosk DLLs (26MB+ of speech recognition libraries). Windows needs to know where to find these at runtime.
+
+**Option 1 - Set PATH manually (PowerShell):**
+```powershell
+# In PowerShell, before running your app
+$env:PATH = "_build\dev\lib\vosk_ex\priv\native\windows-x86_64;$env:PATH"
+
+# Then run normally
+mix test
+mix run
+iex -S mix
+```
+
+**Option 2 - Use the included helper script:**
+```powershell
+# Copy scripts/windows/run.ps1 to your project root
+.\scripts\windows\run.ps1 mix test
+.\scripts\windows\run.ps1 iex -S mix
+```
+
+**Option 3 - Create a startup script for your app:**
+```powershell
+# my_app.ps1
+$env:PATH = "_build\dev\lib\vosk_ex\priv\native\windows-x86_64;$env:PATH"
+mix run --no-halt
+```
+
+**Option 4 - Use Mix releases (recommended for production):**
+```bash
+mix release
+# Releases automatically bundle all DLLs - no PATH manipulation needed!
+```
+
+**Note:** For test environment, use `_build\test\lib\vosk_ex\priv\native\windows-x86_64` instead.
 
 ## Configuration
 

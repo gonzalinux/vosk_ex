@@ -95,12 +95,16 @@ defmodule VoskEx do
           else: "#{List.to_string(native_dir)}:#{current_path}"
         System.put_env("LD_LIBRARY_PATH", new_path)
       {:win32, _} ->
-        # Windows uses PATH
-        current_path = System.get_env("PATH", "")
-        System.put_env("PATH", "#{List.to_string(native_dir)};#{current_path}")
+        # Windows: PATH must be set before starting Erlang/Elixir
+        # See README.md "Windows Users - Additional Setup Required" section
+        :ok
     end
 
-    nif_file = :filename.join(priv_dir, ~c"vosk_nif")
+    # On Windows, NIF is in native directory alongside DLLs for dependency resolution
+    nif_file = case :os.type() do
+      {:win32, _} -> :filename.join([priv_dir, ~c"native", detect_platform(), ~c"vosk_nif"])
+      _ -> :filename.join(priv_dir, ~c"vosk_nif")
+    end
 
     # Get log level from application config, default to -1 (silent)
     log_level = Application.get_env(:vosk_ex, :log_level, -1)

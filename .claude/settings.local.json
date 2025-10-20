@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mix compile:*)",
+      "Bash(mix clean:*)",
+      "Bash(mix test:*)",
+      "Bash(iex -S mix)",
+      "Bash(elixir -e:*)",
+      "Bash(mix run:*)",
+      "Bash(powershell -Command \"$$nv:PATH = ''C:\\Users\\gonza\\IdeaProjects\\vosk_ex\\_build\\dev\\lib\\vosk_ex\\priv\\native\\windows-x86_64;'' + $$nv:PATH; mix run -e ''VoskEx.set_log_level(0); IO.puts(\"\"Success!\"\")''\")",
+      "Bash(elixir -S mix run:*)",
+      "Bash(elixir --eval:*)",
+      "Bash(powershell -ExecutionPolicy Bypass -File run.ps1 mix run -e \"VoskEx.set_log_level(0); IO.puts(\"\"SUCCESS!\"\")\")",
+      "Bash(powershell -NoProfile -ExecutionPolicy Bypass -File run.ps1 mix run -e \"VoskEx.set_log_level(0); IO.puts(\"\"SUCCESS!\"\")\")",
+      "Bash(powershell -NoProfile -ExecutionPolicy Bypass -File run.ps1 mix run -e \"VoskEx.set_log_level(0); IO.puts(\"\"SUCCESS - NIF LOADED!\"\")\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

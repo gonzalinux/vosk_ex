@@ -1,0 +1,124 @@
+# Manual release workflow - creates tag from mix.exs version and publishes to Hex
+#
+# Usage:
+#   1. Update version in mix.exs (e.g., "0.1.3")
+#   2. Update CHANGELOG.md
+#   3. Commit changes: git commit -am "Prepare release v0.1.3"
+#   4. Push to main: git push
+#   5. Go to GitHub Actions → "Manual Release to Hex" → "Run workflow"
+#
+# This workflow will:
+#   - Read version from mix.exs
+#   - Create and push a git tag (e.g., v0.1.3)
+#   - Publish to Hex.pm
+
+name: Manual Release to Hex
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (do not publish to Hex, only create tag)'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  release:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Need full history for tagging
+
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: '1.14'
+          otp-version: '25'
+
+      - name: Extract version from mix.exs
+        id: version
+        run: |
+          VERSION=$(grep 'version:' mix.exs | sed -E 's/.*version: "([0-9.]+)".*/\1/')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Version from mix.exs: $VERSION"
+          echo "🏷️  Will create tag: v$VERSION"
+
+      - name: Check if tag already exists
+        run: |
+          TAG=${{ steps.version.outputs.tag }}
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "❌ ERROR: Tag $TAG already exists!"
+            echo ""
+            echo "If you want to re-release, either:"
+            echo "  1. Delete the tag: git tag -d $TAG && git push origin :refs/tags/$TAG"
+            echo "  2. Bump the version in mix.exs"
+            exit 1
+          fi
+          echo "✅ Tag $TAG does not exist yet, good to go!"
+
+      - name: Verify working directory is clean
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "❌ ERROR: Working directory is not clean!"
+            echo ""
+            echo "Uncommitted changes found:"
+            git status --short
+            echo ""
+            echo "Please commit or stash your changes before releasing."
+            exit 1
+          fi
+          echo "✅ Working directory is clean"
+
+      - name: Create git tag
+        run: |
+          TAG=${{ steps.version.outputs.tag }}
+          VERSION=${{ steps.version.outputs.version }}
+
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+          git tag -a "$TAG" -m "Release $VERSION"
+          echo "✅ Created tag: $TAG"
+
+      - name: Push tag
+        run: |
+          TAG=${{ steps.version.outputs.tag }}
+          git push origin "$TAG"
+          echo "✅ Pushed tag to GitHub: $TAG"
+
+      - name: Install dependencies
+        if: ${{ !inputs.dry_run }}
+        run: mix deps.get
+
+      - name: Publish to Hex.pm
+        if: ${{ !inputs.dry_run }}
+        env:
+          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+        run: |
+          mix hex.publish --yes
+          echo "✅ Published version ${{ steps.version.outputs.version }} to Hex.pm"
+
+      - name: Dry run complete
+        if: ${{ inputs.dry_run }}
+        run: |
+          echo "🏃 DRY RUN MODE - Tag created but NOT published to Hex"
+          echo ""
+          echo "✅ Tag ${{ steps.version.outputs.tag }} has been created and pushed"
+          echo "ℹ️  To publish to Hex, run this workflow again with dry_run=false"
+
+      - name: Release summary
+        run: |
+          echo "🎉 Release complete!"
+          echo ""
+          echo "Version: ${{ steps.version.outputs.version }}"
+          echo "Tag: ${{ steps.version.outputs.tag }}"
+          if [[ "${{ inputs.dry_run }}" == "true" ]]; then
+            echo "Status: Tag created (dry run - not published)"
+          else
+            echo "Status: Published to Hex.pm"
+            echo "View at: https://hex.pm/packages/vosk_ex/${{ steps.version.outputs.version }}"
+          fi

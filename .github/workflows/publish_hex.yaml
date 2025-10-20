@@ -1,0 +1,54 @@
+# Publishes to Hex.pm when a version tag is pushed
+#
+# Release process:
+#   1. Update version in mix.exs (e.g., "0.1.3")
+#   2. Update CHANGELOG.md
+#   3. Commit: git commit -am "Release v0.1.3"
+#   4. Tag: git tag v0.1.3
+#   5. Push: git push && git push --tags
+#
+# This workflow will fail if the tag version doesn't match mix.exs version
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: '1.14'
+          otp-version: '25'
+
+      - name: Verify version matches tag
+        run: |
+          # Extract version from mix.exs
+          MIX_VERSION=$(grep 'version:' mix.exs | sed -E 's/.*version: "([0-9.]+)".*/\1/')
+          # Extract version from git tag (remove 'v' prefix if present)
+          TAG_VERSION=${GITHUB_REF_NAME#v}
+
+          echo "mix.exs version: $MIX_VERSION"
+          echo "Git tag version: $TAG_VERSION"
+
+          if [ "$MIX_VERSION" != "$TAG_VERSION" ]; then
+            echo "ERROR: Version mismatch!"
+            echo "  mix.exs has version: $MIX_VERSION"
+            echo "  Git tag is:          $TAG_VERSION"
+            echo ""
+            echo "Please update the version in mix.exs to match the tag."
+            exit 1
+          fi
+
+          echo "✓ Version matches tag: $MIX_VERSION"
+
+      - name: Publish to Hex.pm
+        uses: erlangpack/github-action@v3
+        env:
+          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}

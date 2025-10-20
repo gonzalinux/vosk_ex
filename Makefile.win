@@ -1,0 +1,115 @@
+# Windows Makefile for VoskEx NIF
+# Uses nmake with Microsoft Visual C++ or MinGW
+
+# Platform-specific settings for Windows
+NATIVE_DIR = windows-x86_64
+LIB_EXT = dll
+
+# Directories - MIX_APP_PATH is set by elixir_make
+!ifndef MIX_APP_PATH
+MIX_APP_PATH = _build\dev\lib\vosk_ex
+!endif
+
+BUILD_DIR = $(MIX_APP_PATH)\priv
+NATIVE_LIB_DIR = priv\native\$(NATIVE_DIR)
+# Put NIF in same directory as Vosk DLLs so Windows can find dependencies
+TARGET = $(BUILD_DIR)\native\$(NATIVE_DIR)\vosk_nif.dll
+SOURCES = c_src\vosk_nif.c
+
+# Erlang include path - must be set by environment or found manually
+# You can set ERLANG_PATH manually or elixir_make will try to detect it
+!ifndef ERLANG_PATH
+# Try common Erlang installation paths
+!if exist("C:\Program Files\Erlang OTP\erts-14.2.5\include")
+ERLANG_PATH = C:\Program Files\Erlang OTP\erts-14.2.5\include
+!else if exist("C:\Program Files\erl-26.2.5\erts-14.2.5\include")
+ERLANG_PATH = C:\Program Files\erl-26.2.5\erts-14.2.5\include
+!else
+ERLANG_PATH = $(ERTS_INCLUDE_DIR)
+!endif
+!endif
+
+# ============================================================================
+# Compiler Detection and Configuration
+# ============================================================================
+
+# Check if cl.exe (MSVC) is available
+!if [where cl.exe >nul 2>&1] == 0
+USE_MSVC = 1
+!else
+USE_MSVC = 0
+!endif
+
+!if $(USE_MSVC) == 1
+# ============================================================================
+# Microsoft Visual C++ compiler
+# ============================================================================
+CC = cl
+CFLAGS = /O2 /DWIN32 /I"$(ERLANG_PATH)" /Ic_src\include /LD /MD /nologo
+LDFLAGS = /link /LIBPATH:"$(NATIVE_LIB_DIR)" libvosk.lib /nologo
+COMPILE_CMD = $(CC) $(CFLAGS) $(SOURCES) /Fe:$(TARGET) $(LDFLAGS)
+!else
+# ============================================================================
+# MinGW/GCC compiler (from MSYS2 or similar)
+# ============================================================================
+CC = gcc
+CFLAGS = -O3 -std=c11 -shared -I"$(ERLANG_PATH)" -Ic_src/include -DWIN32
+LDFLAGS = -L"$(NATIVE_LIB_DIR)" -lvosk -Wl,--enable-auto-import
+COMPILE_CMD = $(CC) $(CFLAGS) -o $(TARGET) $(SOURCES) $(LDFLAGS)
+!endif
+
+# Vosk library download settings
+VOSK_VERSION = 0.3.45
+
+# ============================================================================
+# Build targets
+# ============================================================================
+
+all: create_dirs download_vosk copy_libs compile
+
+# Create necessary directories
+create_dirs:
+	@if not exist "$(NATIVE_LIB_DIR)" mkdir "$(NATIVE_LIB_DIR)"
+	@if not exist "$(BUILD_DIR)" mkdir "$(BUILD_DIR)"
+	@if not exist "$(BUILD_DIR)\native" mkdir "$(BUILD_DIR)\native"
+	@if not exist "$(BUILD_DIR)\native\$(NATIVE_DIR)" mkdir "$(BUILD_DIR)\native\$(NATIVE_DIR)"
+
+# Download Vosk library if not present
+download_vosk:
+	@if not exist "$(NATIVE_LIB_DIR)\libvosk.dll" powershell -NoProfile -ExecutionPolicy Bypass -File download_vosk.ps1 -Version $(VOSK_VERSION) -TargetDir $(NATIVE_LIB_DIR)
+
+# Copy Vosk library files to build directory (same dir as NIF for Windows DLL search)
+copy_libs:
+	@if exist "$(NATIVE_LIB_DIR)\libvosk.dll" copy /Y "$(NATIVE_LIB_DIR)\libvosk.dll" "$(BUILD_DIR)\native\$(NATIVE_DIR)\" >nul
+	@if exist "$(NATIVE_LIB_DIR)\libvosk.lib" copy /Y "$(NATIVE_LIB_DIR)\libvosk.lib" "$(BUILD_DIR)\native\$(NATIVE_DIR)\" >nul
+	@if exist "$(NATIVE_LIB_DIR)\libgcc_s_seh-1.dll" copy /Y "$(NATIVE_LIB_DIR)\libgcc_s_seh-1.dll" "$(BUILD_DIR)\native\$(NATIVE_DIR)\" >nul
+	@if exist "$(NATIVE_LIB_DIR)\libstdc++-6.dll" copy /Y "$(NATIVE_LIB_DIR)\libstdc++-6.dll" "$(BUILD_DIR)\native\$(NATIVE_DIR)\" >nul
+	@if exist "$(NATIVE_LIB_DIR)\libwinpthread-1.dll" copy /Y "$(NATIVE_LIB_DIR)\libwinpthread-1.dll" "$(BUILD_DIR)\native\$(NATIVE_DIR)\" >nul
+
+# Compile the NIF
+compile: $(TARGET)
+
+$(TARGET): $(SOURCES)
+	@echo.
+	@echo Compiling VoskEx NIF...
+!if $(USE_MSVC) == 1
+	@echo Compiler: Microsoft Visual C++ (cl.exe)
+!else
+	@echo Compiler: MinGW GCC
+!endif
+	@echo ERLANG_PATH: $(ERLANG_PATH)
+	@echo.
+	$(COMPILE_CMD)
+	@echo.
+	@echo Build complete: $(TARGET)
+	@echo.
+
+# Clean build artifacts
+clean:
+	@if exist "$(TARGET)" del /F /Q "$(TARGET)"
+	@if exist "$(BUILD_DIR)\*.obj" del /F /Q "$(BUILD_DIR)\*.obj"
+	@if exist "$(BUILD_DIR)\*.exp" del /F /Q "$(BUILD_DIR)\*.exp"
+	@if exist "$(BUILD_DIR)\*.lib" del /F /Q "$(BUILD_DIR)\*.lib"
+	@echo Cleaned build artifacts.
+
+.PHONY: all create_dirs download_vosk copy_libs compile clean
