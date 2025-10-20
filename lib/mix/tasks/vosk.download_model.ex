@@ -80,9 +80,11 @@ defmodule Mix.Tasks.Vosk.DownloadModel do
         Mix.shell().error("Unknown language or invalid model name: #{input}")
         Mix.shell().info("")
         Mix.shell().info("Available predefined languages:")
+
         Enum.each(@predefined_models, fn {code, name} ->
           Mix.shell().info("  #{code} -> #{name}")
         end)
+
         Mix.shell().info("")
         Mix.shell().info("Or provide a full model name from https://alphacephei.com/vosk/models")
         Mix.shell().info("Example: vosk-model-ar-0.22-linto-1.1.0")
@@ -118,12 +120,19 @@ defmodule Mix.Tasks.Vosk.DownloadModel do
     Mix.shell().info("")
 
     # Use curl for download with progress
-    case System.cmd("curl", [
-      "-L",  # Follow redirects
-      "--progress-bar",  # Show progress
-      "-o", dest_path,
-      url
-    ], stderr_to_stdout: true) do
+    case System.cmd(
+           "curl",
+           [
+             # Follow redirects
+             "-L",
+             # Show progress
+             "--progress-bar",
+             "-o",
+             dest_path,
+             url
+           ],
+           stderr_to_stdout: true
+         ) do
       {_output, 0} ->
         Mix.shell().info("")
         Mix.shell().info("✓ Download complete!")

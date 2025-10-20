@@ -87,13 +87,18 @@ defmodule VoskEx do
       {:unix, :darwin} ->
         # macOS uses DYLD_LIBRARY_PATH but it's restricted, rpath should work
         :ok
+
       {:unix, _} ->
         # Linux - add to LD_LIBRARY_PATH
         current_path = System.get_env("LD_LIBRARY_PATH", "")
-        new_path = if current_path == "",
-          do: List.to_string(native_dir),
-          else: "#{List.to_string(native_dir)}:#{current_path}"
+
+        new_path =
+          if current_path == "",
+            do: List.to_string(native_dir),
+            else: "#{List.to_string(native_dir)}:#{current_path}"
+
         System.put_env("LD_LIBRARY_PATH", new_path)
+
       {:win32, _} ->
         # Windows: PATH must be set before starting Erlang/Elixir
         # See README.md "Windows Users - Additional Setup Required" section
@@ -101,10 +106,11 @@ defmodule VoskEx do
     end
 
     # On Windows, NIF is in native directory alongside DLLs for dependency resolution
-    nif_file = case :os.type() do
-      {:win32, _} -> :filename.join([priv_dir, ~c"native", detect_platform(), ~c"vosk_nif"])
-      _ -> :filename.join(priv_dir, ~c"vosk_nif")
-    end
+    nif_file =
+      case :os.type() do
+        {:win32, _} -> :filename.join([priv_dir, ~c"native", detect_platform(), ~c"vosk_nif"])
+        _ -> :filename.join(priv_dir, ~c"vosk_nif")
+      end
 
     # Get log level from application config, default to -1 (silent)
     log_level = Application.get_env(:vosk_ex, :log_level, -1)
@@ -112,6 +118,7 @@ defmodule VoskEx do
     case :erlang.load_nif(nif_file, log_level) do
       :ok ->
         :ok
+
       {:error, {:load_failed, reason}} ->
         IO.warn("Failed to load NIF: #{inspect(reason)}")
         IO.warn("Native library directory: #{native_dir}")
@@ -123,9 +130,11 @@ defmodule VoskEx do
     case :os.type() do
       {:unix, :linux} ->
         detect_arch()
+
       {:unix, :darwin} ->
         # macOS uses Linux builds (they work via compatibility)
         detect_arch()
+
       {:win32, _} ->
         ~c"windows-x86_64"
     end
@@ -135,13 +144,17 @@ defmodule VoskEx do
     case :erlang.system_info(:system_architecture) do
       arch when is_list(arch) ->
         arch_str = List.to_string(arch)
+
         cond do
           String.contains?(arch_str, "x86_64") or String.contains?(arch_str, "amd64") ->
             ~c"linux-x86_64"
+
           String.contains?(arch_str, "aarch64") or String.contains?(arch_str, "arm64") ->
             ~c"linux-aarch64"
+
           true ->
-            ~c"linux-x86_64"  # default
+            # default
+            ~c"linux-x86_64"
         end
     end
   end

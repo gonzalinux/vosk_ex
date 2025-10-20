@@ -117,7 +117,8 @@ defmodule VoskExApiTest do
       {:ok, result} = VoskEx.Recognizer.final_result(recognizer)
 
       # Assert the transcription matches expected text
-      assert result["text"] == "hello one two three welcome to this demonstration thank you for listening"
+      assert result["text"] ==
+               "hello one two three welcome to this demonstration thank you for listening"
     else
       if not File.dir?(@model_path) do
         IO.puts("\nSkipping transcription test - model not found at #{@model_path}")
