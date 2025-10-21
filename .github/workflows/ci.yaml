@@ -88,6 +88,11 @@ jobs:
           echo "✓ NIF compiled: $NIF_FILE"
           ls -lh "$NIF_FILE"
 
+          echo ""
+          echo "Checking NIF dependencies and rpath..."
+          ldd "$NIF_FILE" || true
+          objdump -p "$NIF_FILE" | grep -E "RPATH|RUNPATH" || echo "No RPATH/RUNPATH found"
+
       - name: Check formatting
         run: mix format --check-formatted
         if: ${{ matrix.elixir == '1.17' }} # Only check on one version

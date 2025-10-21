@@ -89,7 +89,7 @@ $(NATIVE_LIB_DIR)/libvosk.$(LIB_EXT):
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-$(TARGET): $(SOURCES)
+$(TARGET): $(SOURCES) $(NATIVE_LIB_DIR)/libvosk.$(LIB_EXT)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(SOURCES)
 
 clean:
