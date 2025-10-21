@@ -21,11 +21,16 @@ jobs:
       - name: Check out
         uses: actions/checkout@v3
 
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl unzip build-essential
+
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
-          elixir-version: '1.14'
-          otp-version: '25'
+          elixir-version: '1.17'
+          otp-version: '26'
 
       - name: Verify version matches tag
         run: |
@@ -47,6 +52,9 @@ jobs:
           fi
 
           echo "✓ Version matches tag: $MIX_VERSION"
+
+      - name: Install dependencies
+        run: mix deps.get
 
       - name: Publish to Hex.pm
         uses: erlangpack/github-action@v3
