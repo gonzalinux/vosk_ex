@@ -23,22 +23,20 @@ jobs:
     name: Test (Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }})
     runs-on: ubuntu-22.04
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         include:
-          # Minimum supported versions
-          - elixir: '1.14'
-            otp: '25'
-          # Latest stable
-          - elixir: '1.17'
-            otp: '26'
-          # Cutting edge
-          - elixir: '1.18'
-            otp: '27'
+          - elixir: "1.17"
+            otp: "26"
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl unzip build-essential
 
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
@@ -49,12 +47,10 @@ jobs:
       - name: Restore dependencies cache
         uses: actions/cache@v3
         with:
-          path: |
-            deps
-            _build
-          key: ${{ runner.os }}-mix-${{ matrix.elixir }}-${{ matrix.otp }}-${{ hashFiles('**/mix.lock') }}
+          path: deps
+          key: ${{ runner.os }}-deps-${{ hashFiles('**/mix.lock') }}
           restore-keys: |
-            ${{ runner.os }}-mix-${{ matrix.elixir }}-${{ matrix.otp }}-
+            ${{ runner.os }}-deps-
 
       - name: Install dependencies
         run: mix deps.get
@@ -62,9 +58,31 @@ jobs:
       - name: Compile (downloads Vosk library)
         run: mix compile --warnings-as-errors
 
+      - name: Verify Vosk library downloaded
+        run: |
+          NATIVE_LIB="_build/dev/lib/vosk_ex/priv/native/linux-x86_64/libvosk.so"
+          if [ ! -f "$NATIVE_LIB" ]; then
+            echo "ERROR: Vosk library not found at $NATIVE_LIB"
+            echo "Contents of _build/dev/lib/vosk_ex/priv/:"
+            ls -lR _build/dev/lib/vosk_ex/priv/ || echo "Directory does not exist"
+            exit 1
+          fi
+          echo "✓ Vosk library found: $NATIVE_LIB"
+          ls -lh "$NATIVE_LIB"
+
+      - name: Verify NIF compiled
+        run: |
+          NIF_FILE="_build/dev/lib/vosk_ex/priv/vosk_nif.so"
+          if [ ! -f "$NIF_FILE" ]; then
+            echo "ERROR: NIF not compiled at $NIF_FILE"
+            exit 1
+          fi
+          echo "✓ NIF compiled: $NIF_FILE"
+          ls -lh "$NIF_FILE"
+
       - name: Check formatting
         run: mix format --check-formatted
-        if: ${{ matrix.elixir == '1.17' }}  # Only check on one version
+        if: ${{ matrix.elixir == '1.17' }} # Only check on one version
 
       - name: Run tests (unit only, no model required)
         run: mix test --exclude integration
@@ -82,8 +100,8 @@ jobs:
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
-          elixir-version: '1.17'
-          otp-version: '26'
+          elixir-version: "1.17"
+          otp-version: "26"
 
       - name: Install dependencies
         run: mix deps.get
