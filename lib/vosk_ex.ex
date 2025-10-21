@@ -202,11 +202,6 @@ defmodule VoskEx do
   def set_words(_recognizer_ref, _enabled), do: :erlang.nif_error("NIF not loaded")
 
   @doc """
-  Enable/disable word timing information in partial results.
-  """
-  def set_partial_words(_recognizer_ref, _enabled), do: :erlang.nif_error("NIF not loaded")
-
-  @doc """
   Process audio data (PCM 16-bit mono).
 
   Returns:

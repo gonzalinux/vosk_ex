@@ -153,20 +153,6 @@ static ERL_NIF_TERM set_words_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM a
     return enif_make_atom(env, "ok");
 }
 
-// Set partial words
-static ERL_NIF_TERM set_partial_words_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
-    RecognizerResource* rec_res;
-    int partial_words;
-
-    if (!enif_get_resource(env, argv[0], RECOGNIZER_TYPE, (void**)&rec_res) ||
-        !enif_get_int(env, argv[1], &partial_words)) {
-        return enif_make_badarg(env);
-    }
-
-    vosk_recognizer_set_partial_words(rec_res->recognizer, partial_words);
-    return enif_make_atom(env, "ok");
-}
-
 // Accept waveform (dirty NIF for potentially long operation)
 static ERL_NIF_TERM accept_waveform_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     RecognizerResource* rec_res;
@@ -273,7 +259,6 @@ static ErlNifFunc nif_funcs[] = {
     {"create_recognizer", 2, create_recognizer_nif, 0},
     {"set_max_alternatives", 2, set_max_alternatives_nif, 0},
     {"set_words", 2, set_words_nif, 0},
-    {"set_partial_words", 2, set_partial_words_nif, 0},
     {"accept_waveform", 2, accept_waveform_nif, ERL_NIF_DIRTY_JOB_CPU_BOUND},
     {"get_result", 1, get_result_nif, 0},
     {"get_partial_result", 1, get_partial_result_nif, 0},
