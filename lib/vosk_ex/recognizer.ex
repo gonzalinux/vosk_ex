@@ -129,6 +129,19 @@ defmodule VoskEx.Recognizer do
   end
 
   @doc """
+  Enable or disable word timing information in partial results.
+
+  ## Examples
+
+      iex> VoskEx.Recognizer.set_partial_words(recognizer, true)
+      :ok
+  """
+  @spec set_partial_words(t(), boolean()) :: :ok
+  def set_partial_words(%__MODULE__{ref: ref}, enabled) when is_boolean(enabled) do
+    VoskEx.set_partial_words(ref, if(enabled, do: 1, else: 0))
+  end
+
+  @doc """
   Process audio data.
 
   ## Parameters

@@ -218,6 +218,7 @@ open doc/index.html
 
 - `load(path)` - Load a model from a directory
 - `load!(path)` - Load a model, raising on error
+- `find_word(model, word)` - Check if a word exists in vocabulary
 
 ### VoskEx.Recognizer
 
@@ -225,6 +226,7 @@ open doc/index.html
 - `new!(model, sample_rate)` - Create a recognizer, raising on error
 - `set_max_alternatives(recognizer, max)` - Set number of alternatives
 - `set_words(recognizer, enabled)` - Enable word timing in results
+- `set_partial_words(recognizer, enabled)` - Enable word timing in partial results
 - `accept_waveform(recognizer, audio)` - Process audio data
 - `result(recognizer)` - Get final result
 - `partial_result(recognizer)` - Get partial result

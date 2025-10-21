@@ -50,6 +50,25 @@ defmodule VoskEx.Model do
   end
 
   @doc """
+  Check if a word exists in the model's vocabulary.
+
+  Returns the word symbol (>= 0) if found, or -1 if not found.
+
+  ## Examples
+
+      iex> model = VoskEx.Model.load!("path/to/model")
+      iex> VoskEx.Model.find_word(model, "hello")
+      42  # word symbol
+
+      iex> VoskEx.Model.find_word(model, "xyzabc")
+      -1  # not found
+  """
+  @spec find_word(t(), String.t()) :: integer()
+  def find_word(%__MODULE__{ref: ref}, word) when is_binary(word) do
+    VoskEx.find_word(ref, word)
+  end
+
+  @doc """
   Load a model from a directory path, raising on error.
 
   ## Examples

@@ -12,7 +12,10 @@
       "Bash(elixir --eval:*)",
       "Bash(powershell -ExecutionPolicy Bypass -File run.ps1 mix run -e \"VoskEx.set_log_level(0); IO.puts(\"\"SUCCESS!\"\")\")",
       "Bash(powershell -NoProfile -ExecutionPolicy Bypass -File run.ps1 mix run -e \"VoskEx.set_log_level(0); IO.puts(\"\"SUCCESS!\"\")\")",
-      "Bash(powershell -NoProfile -ExecutionPolicy Bypass -File run.ps1 mix run -e \"VoskEx.set_log_level(0); IO.puts(\"\"SUCCESS - NIF LOADED!\"\")\")"
+      "Bash(powershell -NoProfile -ExecutionPolicy Bypass -File run.ps1 mix run -e \"VoskEx.set_log_level(0); IO.puts(\"\"SUCCESS - NIF LOADED!\"\")\")",
+      "Read(//tmp/**)",
+      "Bash(tar xz)",
+      "Bash(cat vosk-api-0.3.45/src/vosk_api.h)"
     ],
     "deny": [],
     "ask": []

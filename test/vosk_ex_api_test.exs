@@ -83,6 +83,23 @@ defmodule VoskExApiTest do
   end
 
   @tag :integration
+  test "can find words in model vocabulary" do
+    if File.dir?(@model_path) do
+      {:ok, model} = VoskEx.Model.load(@model_path)
+
+      # Common words should exist (returns >= 0)
+      result = VoskEx.Model.find_word(model, "the")
+      assert result >= 0
+
+      # Random nonsense should not exist (returns -1)
+      result = VoskEx.Model.find_word(model, "xyzqwerty123")
+      assert result == -1
+    else
+      IO.puts("\nSkipping vocabulary test - model not found")
+    end
+  end
+
+  @tag :integration
   test "transcribes test_audio.raw file" do
     audio_path = "test/test_audio.raw"
 

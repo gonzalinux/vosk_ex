@@ -79,6 +79,28 @@ static ERL_NIF_TERM load_model_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM 
     return enif_make_tuple2(env, enif_make_atom(env, "ok"), term);
 }
 
+// Find word in model
+static ERL_NIF_TERM find_word_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
+    ModelResource* model_res;
+    ErlNifBinary word_bin;
+
+    if (!enif_get_resource(env, argv[0], MODEL_TYPE, (void**)&model_res) ||
+        !enif_inspect_binary(env, argv[1], &word_bin)) {
+        return enif_make_badarg(env);
+    }
+
+    // Ensure null termination
+    char word[256];
+    if (word_bin.size >= sizeof(word)) {
+        return enif_make_badarg(env);
+    }
+    memcpy(word, word_bin.data, word_bin.size);
+    word[word_bin.size] = '\0';
+
+    int result = vosk_model_find_word(model_res->model, word);
+    return enif_make_int(env, result);
+}
+
 // Create recognizer
 static ERL_NIF_TERM create_recognizer_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     ModelResource* model_res;
@@ -128,6 +150,20 @@ static ERL_NIF_TERM set_words_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM a
     }
 
     vosk_recognizer_set_words(rec_res->recognizer, words);
+    return enif_make_atom(env, "ok");
+}
+
+// Set partial words
+static ERL_NIF_TERM set_partial_words_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
+    RecognizerResource* rec_res;
+    int partial_words;
+
+    if (!enif_get_resource(env, argv[0], RECOGNIZER_TYPE, (void**)&rec_res) ||
+        !enif_get_int(env, argv[1], &partial_words)) {
+        return enif_make_badarg(env);
+    }
+
+    vosk_recognizer_set_partial_words(rec_res->recognizer, partial_words);
     return enif_make_atom(env, "ok");
 }
 
@@ -233,9 +269,11 @@ static int load(ErlNifEnv* env, void** priv_data, ERL_NIF_TERM load_info) {
 static ErlNifFunc nif_funcs[] = {
     {"set_log_level", 1, set_log_level_nif, 0},
     {"load_model", 1, load_model_nif, 0},
+    {"find_word", 2, find_word_nif, 0},
     {"create_recognizer", 2, create_recognizer_nif, 0},
     {"set_max_alternatives", 2, set_max_alternatives_nif, 0},
     {"set_words", 2, set_words_nif, 0},
+    {"set_partial_words", 2, set_partial_words_nif, 0},
     {"accept_waveform", 2, accept_waveform_nif, ERL_NIF_DIRTY_JOB_CPU_BOUND},
     {"get_result", 1, get_result_nif, 0},
     {"get_partial_result", 1, get_partial_result_nif, 0},

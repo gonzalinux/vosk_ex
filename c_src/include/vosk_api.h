@@ -66,6 +66,14 @@ VoskModel *vosk_model_new(const char *model_path);
 void vosk_model_free(VoskModel *model);
 
 
+/** Check if a word can be recognized by the model
+ * @param word: the word
+ * @returns the word symbol if @param word exists inside the model
+ * or -1 otherwise.
+ * Reminding that word symbol 0 is for <epsilon> */
+int vosk_model_find_word(VoskModel *model, const char *word);
+
+
 /** Loads speaker model data from the file and returns the model object
  *
  * @param model_path: the path of the model on the filesystem
@@ -198,6 +206,12 @@ void vosk_recognizer_set_max_alternatives(VoskRecognizer *recognizer, int max_al
  */
 void vosk_recognizer_set_words(VoskRecognizer *recognizer, int words);
 
+/** Like above return words and confidences in partial results
+ *
+ * @param partial_words - boolean value
+ */
+void vosk_recognizer_set_partial_words(VoskRecognizer *recognizer, int partial_words);
+
 /** Set NLSML output
  * @param nlsml - boolean value
  */
@@ -210,7 +224,7 @@ void vosk_recognizer_set_nlsml(VoskRecognizer *recognizer, int nlsml);
  *
  *  @param data - audio data in PCM 16-bit mono format
  *  @param length - length of the audio data
- *  @returns 1 if silence is occured and you can retrieve a new utterance with result method 
+ *  @returns 1 if silence is occured and you can retrieve a new utterance with result method
  *           0 if decoding continues
  *           -1 if exception occured */
 int vosk_recognizer_accept_waveform(VoskRecognizer *recognizer, const char *data, int length);
@@ -316,7 +330,7 @@ void vosk_batch_model_wait(VoskBatchModel *model);
 /** Creates batch recognizer object
  *  @returns recognizer object or NULL if problem occured */
 VoskBatchRecognizer *vosk_batch_recognizer_new(VoskBatchModel *model, float sample_rate);
- 
+
 /** Releases batch recognizer object */
 void vosk_batch_recognizer_free(VoskBatchRecognizer *recognizer);
 

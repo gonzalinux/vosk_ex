@@ -70,6 +70,14 @@ jobs:
           echo "✓ Vosk library found: $NATIVE_LIB"
           ls -lh "$NATIVE_LIB"
 
+          echo ""
+          echo "Checking for required symbols in library..."
+          nm -D "$NATIVE_LIB" | grep -E "vosk_model_find_word|vosk_recognizer_set_partial_words" || {
+            echo "ERROR: Required symbols not found in library!"
+            exit 1
+          }
+          echo "✓ Required symbols found"
+
       - name: Verify NIF compiled
         run: |
           NIF_FILE="_build/dev/lib/vosk_ex/priv/vosk_nif.so"
@@ -83,6 +91,16 @@ jobs:
       - name: Check formatting
         run: mix format --check-formatted
         if: ${{ matrix.elixir == '1.17' }} # Only check on one version
+
+      - name: Verify test build has Vosk library
+        run: |
+          NATIVE_LIB="_build/test/lib/vosk_ex/priv/native/linux-x86_64/libvosk.so"
+          if [ ! -f "$NATIVE_LIB" ]; then
+            echo "Test build is missing Vosk library, copying from dev build..."
+            mkdir -p _build/test/lib/vosk_ex/priv/native/linux-x86_64
+            cp -r _build/dev/lib/vosk_ex/priv/native/* _build/test/lib/vosk_ex/priv/native/ || true
+          fi
+          ls -lh _build/test/lib/vosk_ex/priv/native/linux-x86_64/libvosk.so || echo "Still missing after copy attempt"
 
       - name: Run tests (unit only, no model required)
         run: mix test --exclude integration
