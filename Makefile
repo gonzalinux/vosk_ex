@@ -42,7 +42,8 @@ SOURCES = c_src/vosk_nif.c
 
 # Compiler flags using bundled library
 CFLAGS = -O3 -std=c11 -fPIC -I$(ERLANG_PATH) -Ic_src/include
-LDFLAGS = -shared -L$(NATIVE_LIB_DIR) -lvosk -Wl,-rpath,'$$ORIGIN/native/$(NATIVE_DIR)'
+LDFLAGS = -shared -Wl,-rpath,'$$ORIGIN/native/$(NATIVE_DIR)'
+LIBS = -L$(NATIVE_LIB_DIR) -lvosk
 
 # Platform-specific adjustments
 ifeq ($(UNAME_S),Darwin)
@@ -90,7 +91,7 @@ $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
 $(TARGET): $(SOURCES) $(NATIVE_LIB_DIR)/libvosk.$(LIB_EXT)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(SOURCES)
+	$(CC) $(CFLAGS) -o $@ $(SOURCES) $(LDFLAGS) $(LIBS)
 
 clean:
 	rm -f $(TARGET)
