@@ -178,13 +178,6 @@ defmodule VoskEx do
   def load_model(_path), do: :erlang.nif_error("NIF not loaded")
 
   @doc """
-  Check if a word exists in the model vocabulary.
-
-  Returns the word symbol (>= 0) if found, or -1 if not found.
-  """
-  def find_word(_model_ref, _word), do: :erlang.nif_error("NIF not loaded")
-
-  @doc """
   Create a recognizer for the given model and sample rate.
 
   Returns `{:ok, recognizer_ref}` or `{:error, :recognizer_creation_failed}`.

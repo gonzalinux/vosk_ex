@@ -218,7 +218,6 @@ open doc/index.html
 
 - `load(path)` - Load a model from a directory
 - `load!(path)` - Load a model, raising on error
-- `find_word(model, word)` - Check if a word exists in vocabulary
 
 ### VoskEx.Recognizer
 
